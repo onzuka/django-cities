@@ -31,8 +31,13 @@ class CityAdmin(CityBaseAdmin):
 
 admin.site.register(City, CityAdmin)
 
-class DistrictAdmin(CityBaseAdmin):
+class TownshipAdmin(CityBaseAdmin):
     raw_id_fields = ['city']
+
+admin.site.register(Township, TownshipAdmin)
+
+class DistrictAdmin(CityBaseAdmin):
+    raw_id_fields = ['city', 'township']
 
 admin.site.register(District, DistrictAdmin)
 

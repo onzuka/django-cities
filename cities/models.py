@@ -6,7 +6,8 @@ from util import create_model, un_camel
 
 __all__ = [
         'Point', 'Country', 'Region', 'Subregion',
-        'City', 'District', 'PostalCode', 'geo_alt_names',
+        'City', 'Township', 'District', 'PostalCode',
+        'geo_alt_names',
 ]
 
 class Place(models.Model):
