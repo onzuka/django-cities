@@ -73,7 +73,7 @@ class Subregion(RegionBase):
 
 class CityBase(Place):
     name_std = models.CharField(max_length=200, db_index=True, verbose_name="standard name")
-    location = models.PointField()
+    location = models.PointField(spatial_index=False)
     population = models.IntegerField()
 
     class Meta:
@@ -155,7 +155,7 @@ for type in [Country, Region, Subregion, City, Township, District]:
 
 class PostalCode(Place):
     code = models.CharField(max_length=20)
-    location = models.PointField()
+    location = models.PointField(spatial_index=False)
 
     country = models.ForeignKey(Country, related_name = 'postal_codes')
 
