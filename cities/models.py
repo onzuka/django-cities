@@ -6,7 +6,8 @@ from util import create_model, un_camel
 
 __all__ = [
         'Point', 'Country', 'Region', 'Subregion',
-        'City', 'District', 'PostalCode', 'geo_alt_names', 
+        'City', 'Township', 'District', 'PostalCode',
+        'geo_alt_names',
 ]
 
 class Place(models.Model):
@@ -72,11 +73,11 @@ class Subregion(RegionBase):
 
 class CityBase(Place):
     name_std = models.CharField(max_length=200, db_index=True, verbose_name="standard name")
-    location = models.PointField()
+    location = models.PointField(spatial_index=False)
     population = models.IntegerField()
 
     class Meta:
-        abstract = True 
+        abstract = True
 
     def __unicode__(self):
         return u'{0}, {1}'.format(force_unicode(self.name_std), self.parent)
@@ -93,8 +94,19 @@ class City(CityBase):
     def parent(self):
         return self.region
 
+    def __unicode__(self):
+        return u'{0}, {1}'.format(force_unicode(self.name_std), self.parent)
+
+class Township(CityBase):
+    city = models.ForeignKey(City)
+
+    @property
+    def parent(self):
+        return self.city
+
 class District(CityBase):
     city = models.ForeignKey(City)
+    township = models.ForeignKey(Township, null=True, blank=True)
 
     @property
     def parent(self):
@@ -138,12 +150,12 @@ def create_geo_alt_names(geo_type):
     return geo_alt_names
 
 geo_alt_names = {}
-for type in [Country, Region, Subregion, City, District]:
+for type in [Country, Region, Subregion, City, Township, District]:
     geo_alt_names[type] = create_geo_alt_names(type)
 
 class PostalCode(Place):
     code = models.CharField(max_length=20)
-    location = models.PointField()
+    location = models.PointField(spatial_index=False)
 
     country = models.ForeignKey(Country, related_name = 'postal_codes')
 
@@ -164,7 +176,7 @@ class PostalCode(Place):
     @property
     def name_full(self):
         """Get full name including hierarchy"""
-        return u', '.join(reversed(self.names)) 
+        return u', '.join(reversed(self.names))
     @property
     def names(self):
         """Get a hierarchy of non-null names, root first"""
