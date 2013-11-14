@@ -7,8 +7,10 @@ from util import create_model, un_camel
 __all__ = [
         'Point', 'Country', 'Region', 'Subregion',
         'City', 'Township', 'District', 'PostalCode',
-        'geo_alt_names',
+        'geo_alt_names', 'ALT_NAMES_PREFIX',
 ]
+
+ALT_NAMES_PREFIX = 'alt_names_'
 
 class Place(models.Model):
     name = models.CharField(max_length=200, db_index=True, verbose_name="ascii name")
@@ -123,7 +125,7 @@ class GeoAltNameManager(models.GeoManager):
             try: return self.filter(**kwargs)[0]
             except IndexError: return default
 
-def create_geo_alt_names(geo_type):
+def create_geo_alt_names(geo_type, rel_name_prefix=ALT_NAMES_PREFIX):
     geo_alt_names = {}
     for locale in settings.locales:
         name_format = geo_type.__name__ + '{0}' + locale.capitalize()
@@ -132,7 +134,7 @@ def create_geo_alt_names(geo_type):
             name = name,
             fields = {
                 'geo': models.ForeignKey(geo_type,                              # Related geo type
-                    related_name = 'alt_names_' + locale),
+                    related_name = rel_name_prefix + locale),
                 'name': models.CharField(max_length=200, db_index=True),        # Alternate name
                 'is_preferred': models.BooleanField(),                          # True if this alternate name is an official / preferred name
                 'is_short': models.BooleanField(),                              # True if this is a short name like 'California' for 'State of California'
